@@ -1,0 +1,19 @@
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 290px;
+  width: 100%;
+}
+
+/* Oculta barra de rolagem horizontal nos botões de cidades no celular */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
