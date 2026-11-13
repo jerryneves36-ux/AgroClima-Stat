@@ -191,6 +191,35 @@
         </div>
       </div>
     </section>
+
+    <!-- Seção de Histórico Mensal -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+      <div>
+        <h3 class="text-base font-semibold text-white">Histórico e Resumo Climático por Mês</h3>
+        <p class="text-xs text-slate-400">
+          Agregação estatística dos dados diários agrupados por calendário mensal
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4">Mês</th>
+              <th class="py-3 px-4">Temp. Média (μ)</th>
+              <th class="py-3 px-4">Temp. Máx Absoluta</th>
+              <th class="py-3 px-4">Chuva Acumulada</th>
+              <th class="py-3 px-4">Demanda ET<sub>0</sub></th>
+              <th class="py-3 px-4">Balanço Hídrico</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyTableBody" class="divide-y divide-slate-800/60">
+            <!-- Preenchido via script.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  
   </main>
 
   <footer class="border-t border-slate-900 py-4 text-center text-xs text-slate-500">
