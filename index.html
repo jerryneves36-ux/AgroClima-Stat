@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroClima Stat | Estatística Climática e Aptidão Agrícola</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Fonte Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- CSS Local -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex flex-col">
+
+  <!-- Cabeçalho -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xl">
+          🌱
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg md:text-xl font-bold tracking-tight text-white">AgroClima Stat</h1>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              Open-Meteo API
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Estatística Climática Descritiva &amp; Motor de Aptidão Agrícola</p>
+        </div>
+      </div>
+
+      <!-- Busca de Cidade -->
+      <div class="flex items-center gap-2 w-full md:w-auto">
+        <div class="relative flex-1 md:w-72">
+          <input
+            id="citySearchInput"
+            type="text"
+            placeholder="Buscar município (ex: Ibititá, Irecê...)"
+            class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none transition"
+          />
+        </div>
+        <button
+          id="searchBtn"
+          class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-xl text-sm transition flex items-center gap-1.5 shrink-0"
+          title="Buscar dados climáticos"
+        >
+          Buscar
+        </button>
+        <button
+          id="saveCityBtn"
+          class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-sm border border-slate-700 transition"
+          title="Salvar cidade nos atalhos"
+        >
+          ★
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Atalhos e Filtro de Janela -->
+    <div class="max-w-7xl mx-auto px-4 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div id="quickCitiesContainer" class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+        <!-- Preenchido via script.js -->
+      </div>
+
+      <div class="flex items-center gap-2 text-xs text-slate-400 shrink-0">
+        <label for="windowSelect" class="font-medium text-slate-300">Janela Estatística:</label>
+        <select
+          id="windowSelect"
+          class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-emerald-500"
+        >
+          <option value="all">Ciclo Completo (Últimos 92d + 14d Previsão)</option>
+          <option value="past90">Histórico Recente (Últimos 90 dias)</option>
+          <option value="past30">Curto Prazo (Últimos 30 dias)</option>
+          <option value="forecast14">Previsão Futura (Próximos 14 dias)</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+
+    <!-- Status e Localização Ativa -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <h2 id="activeLocationTitle" class="text-base md:text-lg font-semibold text-white">Carregando estação...</h2>
+        </div>
+        <p id="activeLocationMeta" class="text-xs text-slate-400 mt-0.5">Consultando coordenadas e séries diárias...</p>
+      </div>
+      <div id="sampleSizeBadge" class="text-xs bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg text-slate-300 self-start sm:self-center">
+        Amostra: -- dias
+      </div>
+    </div>
+
+    <!-- 4 Cartões de Estatística Descritiva -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Temperatura Média -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <span class="text-xs font-medium text-slate-400">Temperatura Média (μ)</span>
+        <div class="text-2xl font-bold text-white mt-1" id="statMeanTemp">-- °C</div>
+        <p class="text-xs text-slate-400 mt-2" id="statMedianTemp">Mediana: -- °C | Amplitude: -- °C</p>
+      </div>
+
+      <!-- Dispersão / Desvio Padrão -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <span class="text-xs font-medium text-slate-400">Desvio Padrão Térmico (σ)</span>
+        <div class="text-2xl font-bold text-amber-400 mt-1" id="statStdTemp">-- °C</div>
+        <p class="text-xs text-slate-400 mt-2" id="statCvTemp">Coef. de Variação (CV): --%</p>
+      </div>
+
+      <!-- Precipitação Acumulada -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <span class="text-xs font-medium text-slate-400">Precipitação Acumulada</span>
+        <div class="text-2xl font-bold text-sky-400 mt-1" id="statRainSum">-- mm</div>
+        <p class="text-xs text-slate-400 mt-2" id="statRainDays">Dias chuvosos (&ge; 1 mm): --</p>
+      </div>
+
+      <!-- Evapotranspiração e Balanço Hídrico -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <span class="text-xs font-medium text-slate-400">Balanço Hídrico (Chuva - ET<sub>0</sub>)</span>
+        <div class="text-2xl font-bold text-emerald-400 mt-1" id="statWaterBalance">-- mm</div>
+        <p class="text-xs text-slate-400 mt-2" id="statEt0Sum">Demanda ET<sub>0</sub> acumulada: -- mm</p>
+      </div>
+    </section>
+
+    <!-- Motor de Recomendação de Culturas -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+        <div>
+          <h3 class="text-base font-semibold text-white">Qual Cultura é Boa para este Clima?</h3>
+          <p class="text-xs text-slate-400">
+            Clique em qualquer cultura abaixo para projetar sua faixa térmica ótima nos gráficos estatísticos.
+          </p>
+        </div>
+        <span id="selectedCropIndicator" class="text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-lg self-start md:self-center">
+          Cultura ativa: Limão e Laranja (Citros)
+        </span>
+      </div>
+
+      <div id="cropCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <!-- Preenchido dinamicamente via script.js -->
+      </div>
+    </section>
+
+    <!-- Gráficos Estatísticos -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Série Temporal Térmica -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 lg:col-span-2">
+        <h3 class="text-sm font-semibold text-white">
+          Série Temporal: T<sub>máx</sub>, T<sub>méd</sub> e T<sub>mín</sub> vs. Zona Ótima da Cultura
+        </h3>
+        <p class="text-xs text-slate-400 mb-4">
+          Linhas tracejadas verdes indicam os limites térmicos ideais da cultura selecionada
+        </p>
+        <div class="chart-wrapper">
+          <canvas id="tempChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Balanço Hídrico Diário -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <h3 class="text-sm font-semibold text-white">
+          Balanço Hídrico Diário: Precipitação (mm) vs. Evapotranspiração ET<sub>0</sub> (mm)
+        </h3>
+        <p class="text-xs text-slate-400 mb-4">
+          Barras azuis acima da linha vermelha indicam recarga hídrica no solo; abaixo indicam déficit diário
+        </p>
+        <div class="chart-wrapper">
+          <canvas id="waterChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Histograma de Frequência -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <h3 class="text-sm font-semibold text-white">
+          Histograma de Distribuição de Frequência das Temperaturas Médias
+        </h3>
+        <p class="text-xs text-slate-400 mb-4">
+          Barras em verde esmeralda representam dias dentro da faixa térmica ótima da cultura selecionada
+        </p>
+        <div class="chart-wrapper">
+          <canvas id="histChart"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-900 py-4 text-center text-xs text-slate-500">
+    AgroClima Stat &bull; Dados meteorológicos em tempo real via Open-Meteo API
+  </footer>
+
+  <!-- Script Local -->
+  <script src="script.js"></script>
+</body>
+</html>
