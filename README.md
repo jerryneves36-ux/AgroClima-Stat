@@ -27,7 +27,7 @@ Aplicação web interativa para análise estatística de dados meteorológicos e
 ## Como Acessar o Site
 
 Acesse a ferramenta diretamente pelo navegador (celular ou computador) através do link oficial:
-👉 **[https://SEU-USUARIO.github.io/agroclima-stat/](https://SEU-USUARIO.github.io/agroclima-stat/)**
+👉 **https://jerryneves36-ux.github.io/AgroClima-Stat/**
 
 ---
 
