@@ -254,6 +254,7 @@ function updateDashboard() {
   renderStatsCards(stats, dates.length);
   renderCropRecommendations(stats, tMean);
   renderCharts(dates, tMax, tMean, tMin, rain, et0);
+  renderMonthlyHistory(rawDailyData);
 }
 
 // Funções de Estatística Descritiva
@@ -547,4 +548,73 @@ function getCommonChartOptions(unitSuffix) {
 function formatDateBR(isoDate) {
   const parts = isoDate.split("-");
   return `${parts[2]}/${parts[1]}`;
+}
+
+function renderMonthlyHistory(rawDailyData) {
+  const tbody = document.getElementById("monthlyTableBody");
+  tbody.innerHTML = "";
+
+  const monthsMap = {};
+
+  rawDailyData.time.forEach((dateStr, i) => {
+    const max = rawDailyData.temperature_2m_max[i];
+    const min = rawDailyData.temperature_2m_min[i];
+    if (max === null || min === null) return;
+
+    const mean = rawDailyData.temperature_2m_mean[i] !== null
+      ? rawDailyData.temperature_2m_mean[i]
+      : (max + min) / 2;
+    
+    const rain = rawDailyData.precipitation_sum[i] || 0;
+    const et0 = rawDailyData.et0_fao_evapotranspiration[i] || 0;
+
+    const yearMonth = dateStr.substring(0, 7);
+
+    if (!monthsMap[yearMonth]) {
+      monthsMap[yearMonth] = {
+        temps: [],
+        maxs: [],
+        rainSum: 0,
+        et0Sum: 0
+      };
+    }
+
+    monthsMap[yearMonth].temps.push(mean);
+    monthsMap[yearMonth].maxs.push(max);
+    monthsMap[yearMonth].rainSum += rain;
+    monthsMap[yearMonth].et0Sum += et0;
+  });
+
+  const monthNames = {
+    "01": "Janeiro", "02": "Fevereiro", "03": "Março", "04": "Abril",
+    "05": "Maio", "06": "Junho", "07": "Julho", "08": "Agosto",
+    "09": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro"
+  };
+
+  const sortedKeys = Object.keys(monthsMap).sort();
+
+  sortedKeys.forEach((ym) => {
+    const data = monthsMap[ym];
+    const [year, monthNum] = ym.split("-");
+    const monthLabel = `${monthNames[monthNum] || monthNum}/${year}`;
+
+    const n = data.temps.length;
+    const meanTemp = data.temps.reduce((a, b) => a + b, 0) / n;
+    const maxAbsolute = Math.max(...data.maxs);
+    const balance = data.rainSum - data.et0Sum;
+
+    const tr = document.createElement("tr");
+    tr.className = "hover:bg-slate-800/40 transition";
+    tr.innerHTML = `
+      <td class="py-3 px-4 font-semibold text-white">${monthLabel}</td>
+      <td class="py-3 px-4">${meanTemp.toFixed(1)} °C</td>
+      <td class="py-3 px-4 text-orange-400">${maxAbsolute.toFixed(1)} °C</td>
+      <td class="py-3 px-4 text-sky-400">${data.rainSum.toFixed(1)} mm</td>
+      <td class="py-3 px-4 text-rose-400">${data.et0Sum.toFixed(1)} mm</td>
+      <td class="py-3 px-4 font-semibold ${balance >= 0 ? "text-emerald-400" : "text-amber-400"}">
+        ${balance >= 0 ? "+" : ""}${balance.toFixed(1)} mm
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
