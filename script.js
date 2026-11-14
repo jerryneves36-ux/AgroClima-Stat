@@ -88,6 +88,26 @@ const CROPS_CATALOG = [
     waterNeedMm90d: 240,
     droughtTolerance: "Baixa",
     notes: "Tradição regional com irrigação; prefere temperaturas amenas à noite e controle rigoroso da lâmina de água."
+  },
+  {
+    id: "milho",
+    name: "Milho Verde",
+    category: "Grãos",
+    tMin: 20,
+    tMax: 30,
+    waterNeedMm90d: 300,
+    droughtTolerance: "Baixa",
+    notes: "Exige boa umidade no solo durante o pendoamento e enchimento de grãos; prefere solos férteis."
+  },
+  {
+    id: "tomate",
+    name: "Tomate",
+    category: "Horticultura",
+    tMin: 18,
+    tMax: 27,
+    waterNeedMm90d: 320,
+    droughtTolerance: "Baixa",
+    notes: "Exige irrigação regular e solo bem drenado; alta sensibilidade a excesso de umidade nas folhas e oscilações bruscas de água."
   }
 ];
 
